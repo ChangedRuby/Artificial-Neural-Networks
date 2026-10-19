@@ -20,7 +20,8 @@ X = np.array([
 ])
 d = np.array([1, -1, 1, -1, 1, -1, 1, -1, 1, -1])
 
-help.grafico_de_espalhamento(X, d)
-help.perceptron_simples(X, d, 0.1, True)
+# help.grafico_de_espalhamento(X, d)
+# help.perceptron_simples(X, d, 0.001, True)
+help.adaline(X, d, 0.005, 1e-4, 1000, True)
 
 print()
