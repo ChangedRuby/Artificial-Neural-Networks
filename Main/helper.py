@@ -9,7 +9,7 @@ def grafico_de_espalhamento(x, d):
 
 def perceptron_simples(x, d, eta, show_graph = False):
     x = np.insert(x, 0, -1, axis=1)
-    w = np.random.uniform(-1, 1, x.shape[1])
+    w = np.random.uniform(-0.5, 0.5, x.shape[1])
 
     x1 = None
     if show_graph:
@@ -46,7 +46,7 @@ def perceptron_simples(x, d, eta, show_graph = False):
 
 def adaline(x, d, eta, convergencia, max_epoch, show_graph = False):
     x = np.insert(x, 0, -1, axis=1)
-    w = np.random.uniform(-1, 1, x.shape[1])
+    w = np.random.uniform(-0.5, 0.5, x.shape[1])
 
     x1 = None
     if show_graph:
@@ -82,11 +82,15 @@ def sinal_escada_bipolar(u):
     return 1 if u > 0 else -1
 
 def calcular_eqm(x, d, w):
-    eqm = 0
-    for k, amostra in enumerate(x):
-        u = (w.T @ amostra)
-        e = d[k] - u
-        eq = (e**2)/2
-        eqm = eqm + eq
-    eqm = eqm/x.shape[0]
-    return eqm
+    e = d - (x @ w)
+    return np.sum(e**2)/(2*x.shape[0])
+
+# def calcular_eqm_antigo(x, d, w):
+#     eqm = 0
+#     for k, amostra in enumerate(x):
+#         u = (w.T @ amostra)
+#         e = d[k] - u
+#         eq = (e**2)/2
+#         eqm = eqm + eq
+#     eqm = eqm/x.shape[0]
+#     return eqm
