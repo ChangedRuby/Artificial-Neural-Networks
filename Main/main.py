@@ -1,27 +1,102 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import helper as help
 
-def sinal(u):
-    return 1 if u > 0 else -1
+from dataset import carregar_dataset
+from validacao import dividir_treino_teste
+from perceptron_simples import PerceptronSimples
 
-# N = 10 amostras, p = 2 atributos
-X = np.array([
-    [4.0, 3.5],
-    [1.2, 0.8],
-    [5.2, 2.8],
-    [2.0, 1.5],
-    [3.1, 4.6],
-    [0.5, 2.3],
-    [6.0, 4.1],
-    [1.8, 0.4],
-    [4.7, 5.3],
-    [2.6, 1.1],
-])
-d = np.array([1, -1, 1, -1, 1, -1, 1, -1, 1, -1])
 
-# help.grafico_de_espalhamento(X, d)
-# help.perceptron_simples(X, d, 0.001, True)
-help.adaline(X, d, 0.005, 1e-8, 1000, True)
+# Carregar dataset
+X, Y, classes = carregar_dataset()
 
-print()
+
+# Hiperparâmetros
+eta = 0.0001
+max_epocas = 1000
+R = 10
+
+
+# Armazenar resultados
+resultados = []
+epocas_rodadas = []
+melhor_rodada = None
+pior_rodada = None
+
+
+# Monte Carlo
+for rodada in range(R):
+
+    print(f"\nRodada {rodada + 1}/{R}")
+
+    # Dividir treinamento e teste
+    X_treino, Y_treino, X_teste, Y_teste = dividir_treino_teste(X, Y)
+
+    # Criar modelo
+    modelo = PerceptronSimples(
+        X_treino,
+        Y_treino,
+        eta,
+        max_epocas
+    )
+
+    # Treinar
+    W, epocas = modelo.fit()
+
+    # Avaliar
+    acuracia_treino = modelo.acuracia(X_treino, Y_treino)
+    acuracia_teste = modelo.acuracia(X_teste, Y_teste)
+
+        # Guardar melhor rodada
+    if melhor_rodada is None or acuracia_teste > melhor_rodada["acuracia"]:
+        melhor_rodada = {
+            "rodada": rodada + 1,
+            "acuracia": acuracia_teste,
+            "W": W.copy(),
+            "epocas": epocas,
+            "historico_erros": modelo.historico_erros.copy(),
+            "X_teste": X_teste.copy(),
+            "Y_teste": Y_teste.copy()
+        }
+
+    # Guardar pior rodada
+    if pior_rodada is None or acuracia_teste < pior_rodada["acuracia"]:
+        pior_rodada = {
+            "rodada": rodada + 1,
+            "acuracia": acuracia_teste,
+            "W": W.copy(),
+            "epocas": epocas,
+            "historico_erros": modelo.historico_erros.copy(),
+            "X_teste": X_teste.copy(),
+            "Y_teste": Y_teste.copy()
+        }
+
+    # Armazenar
+    resultados.append(acuracia_teste)
+    epocas_rodadas.append(epocas)
+
+    print("Épocas:", epocas)
+    print("Acurácia de treinamento:", acuracia_treino)
+    print("Acurácia de teste:", acuracia_teste)
+
+
+# Estatísticas finais
+resultados = np.array(resultados)
+
+media = np.mean(resultados)
+desvio = np.std(resultados)
+maximo = np.max(resultados)
+minimo = np.min(resultados)
+
+
+print("\n========== RESULTADOS MONTE CARLO ==========")
+print("Número de rodadas:", R)
+print("Média da acurácia:", media)
+print("Desvio padrão:", desvio)
+print("Maior acurácia:", maximo)
+print("Menor acurácia:", minimo)
+print("\n========== MELHOR RODADA ==========")
+print("Rodada:", melhor_rodada["rodada"])
+print("Acurácia:", melhor_rodada["acuracia"])
+
+print("\n========== PIOR RODADA ==========")
+print("Rodada:", pior_rodada["rodada"])
+print("Acurácia:", pior_rodada["acuracia"])
