@@ -19,12 +19,14 @@ class PerceptronSimples:
         self.eta = eta
         self.max_epocas = max_epocas
 
+        # Um vetor de pesos para cada classificador
         self.W = np.random.random_sample((self.m, self.p)) - 0.5
 
         self.historico_erros = []
 
     def predict(self, X):
 
+        # Cada linha representa a saída de um classificador
         u = self.W @ X
         return degrau_bipolar(u)
 
@@ -44,17 +46,26 @@ class PerceptronSimples:
                 x_k = self.X[:, k].reshape(self.p, 1)
                 d_k = self.D[:, k].reshape(self.m, 1)
 
-                u_k = self.W @ x_k
+                # Treina cada classificador independentemente
+                for j in range(self.m):
 
-                y_k = degrau_bipolar(u_k)
+                    w_j = self.W[j, :].reshape(self.p, 1)
+                    d_j = d_k[j, 0]
 
-                e_k = d_k - y_k
+                    u_k = (w_j.T @ x_k)[0, 0]
 
-                self.W = self.W + self.eta * (e_k @ x_k.T)
+                    y_k = degrau_bipolar(u_k)
 
-                if np.any(e_k != 0):
-                    erro = True
+                    e_k = d_j - y_k
 
+                    w_j = w_j + self.eta * e_k * x_k
+
+                    self.W[j, :] = w_j.ravel()
+
+                    if e_k != 0:
+                        erro = True
+
+            # Calcula a quantidade de amostras com classificação incorreta
             saidas = self.predict(self.X)
 
             erros = np.sum(
